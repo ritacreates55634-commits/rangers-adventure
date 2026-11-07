@@ -272,3 +272,10 @@ html{overflow-x:clip}
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
 }
+
+.shards{position:absolute;inset:0;pointer-events:none;z-index:3}
+.shard{position:absolute;inset:0;will-change:transform,opacity}
+.shard svg{display:block;width:100%;height:auto;filter:drop-shadow(0 0 8px rgba(190,90,255,.9))}
+.enemy.prebreak .enemy-svg{animation:prebreak .65s linear}
+@keyframes prebreak{0%{filter:brightness(1)}20%{transform:translate(-6px,3px);filter:brightness(2)}40%{transform:translate(7px,-4px) scale(1.04);filter:brightness(3)}60%{transform:translate(-8px,2px) scale(1.07);filter:brightness(4)}80%{transform:translate(8px,-3px) scale(1.1);filter:brightness(5)}100%{transform:scale(1.14);filter:brightness(7)}}
+.enemy.gone .enemy-name,.enemy.gone .hpbar{opacity:0;transition:opacity .4s}

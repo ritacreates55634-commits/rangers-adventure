@@ -443,7 +443,7 @@ function renderSquad() {
 function setEnemy(isBoss) {
   arena.classList.toggle('boss', isBoss);
   enemy.classList.toggle('boss', isBoss);
-  enemy.classList.remove('defeat', 'hit', 'lunge');
+  enemy.classList.remove('defeat', 'hit', 'lunge', 'prebreak', 'gone'); enemySvg.style.visibility = '';
   hpFill.style.transition = 'none'; hpFill.style.width = '100%'; void hpFill.offsetWidth; hpFill.style.transition = '';
   barrier.innerHTML = '';
   if (isBoss) {
@@ -691,12 +691,48 @@ async function failFinale() {
   hpFill.style.width = '100%'; el('timerFill').style.transform = 'scaleX(1)';
   el('finaleLead').innerHTML = '全員の力を、ひとつに。<br>太鼓を連打して拡散してください。';
 }
+
+/* 大サタンが砕け散る */
+function shatter() {
+  const body = enemySvg.parentElement;
+  const wrap = document.createElement('div'); wrap.className = 'shards';
+  const COLS = 5, ROWS = 6, P = [];
+  for (let j = 0; j <= ROWS; j++) { P[j] = []; for (let i = 0; i <= COLS; i++) {
+    const edge = i === 0 || j === 0 || i === COLS || j === ROWS;
+    P[j][i] = [i / COLS * 100 + (edge ? 0 : rand(-7, 7)), j / ROWS * 100 + (edge ? 0 : rand(-6, 6))];
+  } }
+  const tris = [];
+  for (let j = 0; j < ROWS; j++) for (let i = 0; i < COLS; i++) {
+    const a = P[j][i], b = P[j][i + 1], c = P[j + 1][i], d = P[j + 1][i + 1];
+    if (Math.random() < .5) { tris.push([a, b, c]); tris.push([b, d, c]); } else { tris.push([a, b, d]); tris.push([a, d, c]); }
+  }
+  const html = enemySvg.innerHTML;
+  tris.forEach(t => {
+    const cx = (t[0][0] + t[1][0] + t[2][0]) / 3, cy = (t[0][1] + t[1][1] + t[2][1]) / 3;
+    const s = document.createElement('div'); s.className = 'shard';
+    s.style.clipPath = `polygon(${t.map(p => p[0].toFixed(1) + '% ' + p[1].toFixed(1) + '%').join(',')})`;
+    s.style.transformOrigin = `${cx}% ${cy}%`;
+    s.innerHTML = html; wrap.appendChild(s);
+    const dx = cx - 50, dy = cy - 55, dist = Math.hypot(dx, dy) || 1;
+    const fx2 = dx / dist * rand(90, 240) + rand(-30, 30), fy2 = dy / dist * rand(70, 200) + rand(20, 160);
+    s.animate([
+      { transform: 'translate(0,0) rotate(0) scale(1)', opacity: 1, filter: 'brightness(3)' },
+      { transform: `translate(${fx2 * .25}px,${fy2 * .2 - 20}px) rotate(${rand(-40, 40)}deg) scale(1)`, opacity: 1, filter: 'brightness(1.4)', offset: .2 },
+      { transform: `translate(${fx2}px,${fy2}px) rotate(${rand(-420, 420)}deg) scale(${rand(.15, .6)})`, opacity: 0, filter: 'brightness(1)' }
+    ], { duration: rand(1300, 2100), delay: dist * 5 + rand(0, 160), easing: 'cubic-bezier(.2,.7,.4,1)', fill: 'both' });
+  });
+  body.appendChild(wrap);
+  enemySvg.style.visibility = 'hidden'; barrier.innerHTML = '';
+  enemy.classList.add('gone');
+  setTimeout(() => wrap.remove(), 2800);
+}
 async function winFinale() {
   const F = S.finale; F.over = true; cancelAnimationFrame(F.raf);
   el('timerFill').style.transform = 'scaleX(0)'; hpFill.style.width = '0%';
   sfx.boom(); flash('flash');
-  await wait(300);
-  enemy.classList.add('defeat'); showBanner('大サタン撃破！'); sfx.victory();
+  enemy.classList.add('prebreak'); await wait(650);
+  shatter(); showBanner('大サタン撃破！'); sfx.victory();
+  { const rb = enemySvg.getBoundingClientRect(); burst(rb.left + rb.width / 2, rb.top + rb.height / 2, 24); flash('flash'); }
   const r = arena.getBoundingClientRect();
   for (let i = 0; i < 6; i++) setTimeout(() => burst(r.left + rand(.1, .9) * r.width, r.top + rand(.15, .8) * r.height, 14), i * 220);
   await wait(4200);
