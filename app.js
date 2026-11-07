@@ -730,12 +730,15 @@ function showResult() {
 }
 el('btnAgain').addEventListener('click', startGame);
 el('btnShare').addEventListener('click', async () => {
-  const text = `レンジャイの大冒険をクリアしました。ランクは${el('rankLetter').textContent}、集まった仲間は${el('statSquad').textContent}でした。君は大サタンを倒せるか？`;
-  const url = location.href.split('#')[0];
+  const SITE = 'https://ritacreates55634-commits.github.io/rangers-adventure/';
+  const msg = `レンジャイの大冒険をクリアしました。ランクは${el('rankLetter').textContent}、集まった仲間は${el('statSquad').textContent}でした。君は大サタンを倒せるか？`;
+  const full = `${msg}
+${SITE}`;           // 結果とリンクを1つの文章にして渡す
   try {
-    if (navigator.share) { await navigator.share({ title: 'レンジャイの大冒険', text, url }); return; }
+    if (navigator.share) { await navigator.share({ title: 'レンジャイの大冒険', text: full }); return; }
   } catch (e) { if (e && e.name === 'AbortError') return; }
-  try { await navigator.clipboard.writeText(`${text} ${url}`); el('copied').hidden = false; } catch (e) { prompt('コピーしてお使いください', `${text} ${url}`); }
+  try { await navigator.clipboard.writeText(full); el('copied').hidden = false; el('copied').textContent = '結果とリンクをコピーしました'; }
+  catch (e) { prompt('コピーしてお使いください', full); }
 });
 el('btnStart').addEventListener('click', () => { ac(); sfx.tap(); startGame(); });
 el('startCta').addEventListener('click', () => { ac(); });
