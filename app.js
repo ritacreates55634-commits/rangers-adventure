@@ -730,7 +730,7 @@ function showResult() {
 }
 el('btnAgain').addEventListener('click', startGame);
 el('btnShare').addEventListener('click', async () => {
-  const SITE = 'https://ritacreates55634-commits.github.io/rangers-adventure/';
+  const SITE = 'https://is.gd/Xe5rfv';
   const msg = `レンジャイの大冒険をクリアしました。ランクは${el('rankLetter').textContent}、集まった仲間は${el('statSquad').textContent}でした。君は大サタンを倒せるか？`;
   const full = `${msg}
 ${SITE}`;           // 結果とリンクを1つの文章にして渡す
