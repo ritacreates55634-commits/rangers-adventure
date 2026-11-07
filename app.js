@@ -460,6 +460,9 @@ function setEnemy(isBoss) {
 
 function startGame() {
   S = newState();
+  // 通常戦の出題順を毎回ランダムに（大サタン戦は最後に固定）
+  const nn = TOTAL - BOSS_N;
+  for (let i = nn - 1; i > 0; i--) { const j = (Math.random() * (i + 1)) | 0; [LIST[i], LIST[j]] = [LIST[j], LIST[i]]; }
   showScreen('battle');
   el('squadRow').innerHTML = '';
   renderLives(); renderSquad();
