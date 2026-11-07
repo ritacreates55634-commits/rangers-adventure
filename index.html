@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>レンジャイの大冒険 | 君は大サタンを倒せるか？</title>
+<meta name="description" content="クイズに正解して敵を倒し、仲間のレンジャイと力を合わせて大サタンに挑む。SNS拡散力が身につく体験型クイズゲーム。">
+<meta name="theme-color" content="#0a0a2a">
+<meta property="og:title" content="レンジャイの大冒険">
+<meta property="og:description" content="君は大サタンを倒せるか？">
+<meta property="og:image" content="images/src1.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Dela+Gothic+One&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="progress" aria-hidden="true"><i id="progress"></i></div>
+<div id="fx" aria-hidden="true"></div>
+
+<header class="topbar">
+  <a class="brand" href="#hero">RENJAI ADVENTURE</a>
+  <button id="soundBtn" class="sound" type="button" aria-pressed="true">音 ON</button>
+</header>
+
+<!-- ============ HERO ============ -->
+<section id="hero" class="hero">
+  <div class="hero-bg" id="heroBg"></div>
+  <div class="hero-shade"></div>
+  <canvas id="leaves" aria-hidden="true"></canvas>
+  <div class="hero-inner" id="heroInner">
+    <p class="eyebrow">RENJAI ADVENTURE</p>
+    <h1 class="kinetic" id="title" aria-label="レンジャイの大冒険">
+      <span class="line l1" data-text="レンジャイの"></span>
+      <span class="line l2" data-text="大冒険"></span>
+    </h1>
+    <p class="sub"><span>君は大サタンを倒せるか？</span></p>
+    <a href="#game" class="btn-gold big" id="startCta">冒険にでる</a>
+    <p class="hint">画面をタップすると、ハートが飛びます</p>
+  </div>
+  <a class="scroll-cue" href="#story" aria-label="下へスクロール"><span>SCROLL</span><i></i></a>
+</section>
+
+<!-- ============ STORY ============ -->
+<section id="story" class="story">
+  <div class="marquee" aria-hidden="true">
+    <div class="track" id="marqueeTrack">
+      <span>RENJAI ADVENTURE</span><span>君は大サタンを倒せるか？</span><span>RENJAI ADVENTURE</span><span>君は大サタンを倒せるか？</span><span>RENJAI ADVENTURE</span><span>君は大サタンを倒せるか？</span>
+    </div>
+  </div>
+  <div class="story-pin" id="storyPin">
+    <div class="story-sticky">
+      <div class="story-bg"></div>
+      <p class="kicker">STORY</p>
+      <h2 class="story-title">ひとりの光は小さくても、<br>みんなが灯せば夜が明ける。</h2>
+      <div class="counter" aria-live="off">
+        <span class="num" id="cnt">1</span><span class="plus" id="cntPlus">+</span><small>人のレンジャイ</small>
+      </div>
+      <div class="grid" id="storyGrid" aria-label="レンジャイの数を表すハートの並び。タップすると光ります"></div>
+      <div class="captions" id="captions">
+        <p class="cap on">いま、たった1人のレンジャイが戦っています。</p>
+        <p class="cap">クイズに正解するたび、仲間の光が増えていきます。</p>
+        <p class="cap">100人を超えたとき、ハートは大サタンに届きます。</p>
+      </div>
+      <p class="hint small">ハートをタップして、光らせてみてください</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ GAME ============ -->
+<section id="game" class="game">
+  <div class="game-bg"></div>
+  <div class="game-wrap">
+    <p class="kicker center">QUEST</p>
+    <h2 class="game-title">敵を倒して、大サタンのもとへ。</h2>
+
+    <div class="cabinet" id="cabinet">
+      <!-- start -->
+      <div id="screenStart" class="screen on">
+        <div class="start-card">
+          <div class="start-ranger" id="startRanger"></div>
+          <div>
+            <h3>あそびかた</h3>
+            <ol class="howto">
+              <li><b>1</b><span>クイズに答えて、敵に挑みます。</span></li>
+              <li><b>2</b><span>正解したら「拡散アタック」をタップ。ハートが敵に届きます。</span></li>
+              <li><b>3</b><span>正解が多いほど仲間が増え、最後の戦いが有利になります。</span></li>
+            </ol>
+            <button class="btn-gold big" id="btnStart" type="button">ゲームスタート</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- battle -->
+      <div id="screenBattle" class="screen">
+        <div class="hud">
+          <div class="stage" id="stageLabel">第1戦</div>
+          <div class="lives" id="lives" aria-label="のこりライフ"></div>
+          <div class="squad-count"><small>レンジャイ</small><b id="squadNum">1</b><small>人</small></div>
+        </div>
+
+        <div class="arena" id="arena">
+          <div class="arena-bg" id="arenaBg"></div>
+          <div class="enemy" id="enemy">
+            <div class="enemy-name" id="enemyName"></div>
+            <div class="enemy-body">
+              <div class="barrier" id="barrier"></div>
+              <div class="enemy-svg" id="enemySvg"></div>
+            </div>
+            <div class="hpbar"><i id="hpFill"></i></div>
+          </div>
+          <div class="player" id="player">
+            <div class="ranger-big" id="rangerBig"><span class="phone-anchor" id="phone"></span></div>
+          </div>
+          <div class="squad" id="squadRow"></div>
+          <div class="banner" id="banner"></div>
+        </div>
+
+        <div class="panel" id="panel">
+          <!-- quiz -->
+          <div id="pQuiz">
+            <p class="q-no" id="qNo"></p>
+            <h3 class="q-text" id="qText"></h3>
+            <p class="q-hint" id="qHint" hidden></p>
+            <div class="choices" id="choices"></div>
+          </div>
+          <!-- feedback -->
+          <div id="pFeedback" hidden>
+            <div class="verdict" id="verdict"></div>
+            <p class="explain" id="explain"></p>
+            <div class="btn-row">
+              <button class="btn-attack" id="btnAttack" type="button"><span>拡散アタック</span></button>
+              <button class="btn-gold" id="btnNext" type="button">つぎへ</button>
+            </div>
+          </div>
+          <!-- rally -->
+          <div id="pRally" hidden>
+            <p class="rally-lead">大サタンが姿を現した。<br>集まれ、レンジャイたち。</p>
+            <div class="grid small" id="rallyGrid"></div>
+            <p class="rally-count"><b id="rallyNum">0</b><span id="rallyPlus"></span>人が駆けつけました</p>
+            <button class="btn-gold big" id="btnRally" type="button">決戦へ</button>
+          </div>
+          <!-- finale -->
+          <div id="pFinale" hidden>
+            <p class="finale-lead" id="finaleLead">全員の力を、ひとつに。<br>太鼓を連打して拡散してください。</p>
+            <div class="gauge"><i id="gaugeFill"></i><span id="gaugeText">0%</span></div>
+            <div class="timer"><i id="timerFill"></i></div>
+            <button class="btn-mash" id="btnMash" type="button"><span>拡散</span></button>
+          </div>
+          <!-- game over -->
+          <div id="pOver" hidden>
+            <p class="over-lead">ちからが尽きてしまいました。<br>もう一度、立ち上がりましょう。</p>
+            <button class="btn-gold big" id="btnRetryQ" type="button">この問題からやり直す</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- result -->
+      <div id="screenResult" class="screen">
+        <div class="result">
+          <p class="kicker center">CLEAR</p>
+          <h3 class="result-title">大サタンを倒しました。</h3>
+          <div class="rank" id="rank"><small>RANK</small><b id="rankLetter">S</b><span id="rankName"></span></div>
+          <ul class="stats">
+            <li><small>正解</small><b id="statCorrect">0</b></li>
+            <li><small>集まった仲間</small><b id="statSquad">0</b></li>
+            <li><small>ミス</small><b id="statMiss">0</b></li>
+          </ul>
+          <p class="result-msg" id="resultMsg"></p>
+          <div class="btn-row">
+            <button class="btn-gold" id="btnShare" type="button">結果をシェア</button>
+            <button class="btn-ghost" id="btnAgain" type="button">もう一度あそぶ</button>
+          </div>
+          <p class="copied" id="copied" hidden>結果をコピーしました</p>
+          <details class="review" id="review">
+            <summary>まちがえた問題を復習する</summary>
+            <div id="reviewList"></div>
+          </details>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <p>RENJAI ADVENTURE</p>
+  <small>レンジャイの大冒険</small>
+</footer>
+
+<noscript><p style="padding:24px;color:#fff">このページはJavaScriptを有効にしてご覧ください。</p></noscript>
+<script src="quiz-data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
