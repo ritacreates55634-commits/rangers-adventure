@@ -224,8 +224,8 @@ html{overflow-x:clip}
 .q-hint{font-weight:900;color:var(--gold2);margin:-8px 0 14px;font-size:15px}
 .choice img{max-height:64px;max-width:100%;object-fit:contain;background:#fff;border-radius:10px;padding:6px;margin:0 auto}
 .choices.imgs{grid-template-columns:1fr 1fr}
-.choices.imgs .choice{flex-direction:column;align-items:stretch;gap:8px;min-height:110px;text-align:center}
-.choices.imgs .choice .k{position:absolute;top:8px;left:8px;z-index:1}
+.choices.imgs .choice{flex-direction:column;align-items:stretch;gap:8px;min-height:110px;text-align:center;justify-content:center}
+.choices.imgs .choice .k{position:static;align-self:center}
 .choices.imgs .choice img{max-height:84px;width:100%}
 .choice.sel{border-color:var(--gold2);background:rgba(255,216,74,.22);box-shadow:0 0 0 2px var(--gold2) inset}
 .choices.order .choice .k:empty{background:rgba(255,255,255,.15)}
@@ -264,7 +264,7 @@ html{overflow-x:clip}
 @media(max-width:560px){
   .kinetic .l2{font-size:clamp(80px,31vw,200px)}
   .enemy{right:3%;width:50%;top:56px}
-  .enemy.boss{width:50%;top:34px}
+  .enemy.boss{width:48%;top:50px}
   .player{width:30%;left:3%}
   .hud{padding:8px 10px}
   .squad svg{width:28px}
@@ -279,3 +279,7 @@ html{overflow-x:clip}
 .enemy.prebreak .enemy-svg{animation:prebreak .65s linear}
 @keyframes prebreak{0%{filter:brightness(1)}20%{transform:translate(-6px,3px);filter:brightness(2)}40%{transform:translate(7px,-4px) scale(1.04);filter:brightness(3)}60%{transform:translate(-8px,2px) scale(1.07);filter:brightness(4)}80%{transform:translate(8px,-3px) scale(1.1);filter:brightness(5)}100%{transform:scale(1.14);filter:brightness(7)}}
 .enemy.gone .enemy-name,.enemy.gone .hpbar{opacity:0;transition:opacity .4s}
+
+.enemy-name{position:relative;z-index:6;display:inline-block;padding:1px 14px;border-radius:99px;background:rgba(10,10,42,.8);border:1.5px solid var(--gold2);text-shadow:none;margin-bottom:6px}
+.enemy.boss .enemy-name{margin-bottom:22px;color:var(--gold1)}
+.squad-count{white-space:nowrap}
