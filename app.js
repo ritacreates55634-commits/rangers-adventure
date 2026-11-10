@@ -215,7 +215,6 @@ function bgmTick() {
 const UNLOCK_EVENTS = ['pointerdown', 'touchend', 'keydown', 'click', 'wheel', 'scroll'];
 function bgmUnlock(e) {
   if (bgm.unlocked) return;
-  if (e && e.target && e.target.closest && e.target.closest('#startCta')) bgm.want = 'main';
   const a = ac(); if (!a) return;
   const ok = () => {
     if (a.state !== 'running' || bgm.unlocked) return;
@@ -942,5 +941,5 @@ ${SITE}`;           // 結果とリンクを1つの文章にして渡す
   catch (e) { prompt('コピーしてお使いください', full); }
 });
 el('btnStart').addEventListener('click', () => { ac(); sfx.tap(); startGame(); });
-el('startCta').addEventListener('click', () => { ac(); bgmPlay('main'); });   // 「冒険にでる」から冒険のテーマ
+el('startCta').addEventListener('click', () => { ac(); });
 })();
