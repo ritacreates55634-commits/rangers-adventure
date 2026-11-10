@@ -220,7 +220,7 @@ function bgmUnlock(e) {
     if (a.state !== 'running' || bgm.unlocked) return;
     bgm.unlocked = true;
     UNLOCK_EVENTS.forEach(ev => removeEventListener(ev, bgmUnlock, true));
-    if (soundOn) bgmPlay(bgm.want || 'quest');
+    if (soundOn) bgmPlay(bgm.want || 'main');
   };
   if (a.state === 'running') ok(); else a.resume().then(ok).catch(() => {});
 }
@@ -280,7 +280,7 @@ soundBtn.addEventListener('click', () => {
   soundOn = !soundOn;
   soundBtn.setAttribute('aria-pressed', soundOn);
   soundBtn.textContent = soundOn ? '音 ON' : '音 OFF';
-  if (soundOn) { sfx.tap(); bgm.unlocked = true; bgmPlay(bgm.want || 'quest'); } else bgmStop(.4);
+  if (soundOn) { sfx.tap(); bgm.unlocked = true; bgmPlay(bgm.want || 'main'); } else bgmStop(.4);
 });
 
 /* ---------------------------------------------------------
@@ -622,7 +622,7 @@ function setEnemy(isBoss) {
 
 function startGame() {
   S = newState();
-  bgmPlay('main');
+  bgmPlay('quest');
   // 通常戦の出題順を毎回ランダムに（大サタン戦は最後に固定）
   const nn = TOTAL - BOSS_N;
   for (let i = nn - 1; i > 0; i--) { const j = (Math.random() * (i + 1)) | 0; [LIST[i], LIST[j]] = [LIST[j], LIST[i]]; }
@@ -890,7 +890,7 @@ function shatter() {
   setTimeout(() => wrap.remove(), 2800);
 }
 async function winFinale() {
-  const F = S.finale; F.over = true; cancelAnimationFrame(F.raf); bgmStop(.4); bgm.want = 'quest';
+  const F = S.finale; F.over = true; cancelAnimationFrame(F.raf); bgmStop(.4); bgm.want = 'main';
   el('timerFill').style.transform = 'scaleX(0)'; hpFill.style.width = '0%';
   sfx.boom(); flash('flash');
   enemy.classList.add('prebreak'); await wait(650);
@@ -926,7 +926,7 @@ function showResult() {
   showScreen('result');
   el('cabinet').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
   burst(innerWidth / 2, innerHeight / 2, 16);
-  bgmPlay('quest');
+  bgmPlay('main');
 }
 el('btnAgain').addEventListener('click', startGame);
 el('btnShare').addEventListener('click', async () => {
