@@ -112,9 +112,6 @@ const TRACKS = {
         osc('sawtooth', mf(m), t, spb * len * .95, .075, .03, undefined, [1300, 3400]);
         osc('square', mf(m + 12), t, spb * len * .6, .018, .02, undefined, [2000, 5000]);
       });
-      if (st === 0) taiko(true, t, .5);
-      if (st === 8) taiko(false, t, .45);
-      if (st === 6 || st === 10) taiko(false, t, .3);
       if (st === 4 || st === 12) noiseHit(t, .12, 'bandpass', 1800, .8, .16);
       if (st % 2 === 0) noiseHit(t, .03, 'highpass', 7000, .5, .05);
       if (bar % 4 === 3 && st >= 12) noiseHit(t, .08, 'bandpass', 2200, .8, .12);
@@ -142,11 +139,7 @@ const TRACKS = {
       if (st % 2 === 0) osc('sawtooth', mf(b), t, spb * 1.9, .14, .004, undefined, [800, 150]);
       osc('square', mf(b + 24 + this.OST[st % 8]), t, spb * .75, .032, .002, undefined, [2400, 500]);
       (this.RIFF[ci] || []).forEach(([ms, m, len]) => { if (ms === st) brass(mf(m + (bar >= 4 ? 12 : 0)), t, spb * len * .95, .06); });
-      if (st === 0) taiko(true, t, 1);
-      if (st === 8) taiko(true, t, .85);
-      if (st === 4 || st === 12) { taiko(false, t, .7); noiseHit(t, .18, 'bandpass', 1600, .7, .26); }
-      if (st === 6 || st === 14) taiko(false, t, .5);
-      if (bar % 4 === 3 && st >= 12) taiko(false, t, .55 + (st - 12) * .12);
+      if (st === 4 || st === 12) noiseHit(t, .18, 'bandpass', 1600, .7, .26);
       if (bar % 4 === 0 && st === 0) cymbal(t, bar === 0 ? .2 : .1);
     }
   }
