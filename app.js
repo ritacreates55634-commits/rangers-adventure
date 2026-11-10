@@ -212,8 +212,9 @@ function bgmTick() {
     bgm.nextT += 60 / tr.bpm / 4; bgm.step = (bgm.step + 1) % (tr.bars * 16);
   }
 }
-function bgmUnlock() {
+function bgmUnlock(e) {
   if (bgm.unlocked) return;
+  if (e && e.target && e.target.closest && e.target.closest('#startCta')) bgm.want = 'main';
   bgm.unlocked = true; ac();
   ['pointerdown', 'touchend', 'keydown', 'click'].forEach(ev => removeEventListener(ev, bgmUnlock, true));
   if (soundOn) bgmPlay(bgm.want || 'quest');
@@ -934,5 +935,5 @@ ${SITE}`;           // 結果とリンクを1つの文章にして渡す
   catch (e) { prompt('コピーしてお使いください', full); }
 });
 el('btnStart').addEventListener('click', () => { ac(); sfx.tap(); startGame(); });
-el('startCta').addEventListener('click', () => { ac(); });
+el('startCta').addEventListener('click', () => { ac(); bgmPlay('main'); });   // 「冒険にでる」から冒険のテーマ
 })();
