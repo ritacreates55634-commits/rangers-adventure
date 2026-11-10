@@ -198,9 +198,9 @@ function bgmPlay(name) {
   if (!soundOn || !bgm.unlocked) return;
   const a = ac(), m = master(); if (!a || !m) return;
   if (bgm.name === name) return;
-  if (bgm.timer) bgmStop(.5);
+  if (bgm.timer) bgmStop(.25);
   const g = a.createGain(), now = a.currentTime;
-  g.gain.setValueAtTime(0, now); g.gain.linearRampToValueAtTime(TRACKS[name].vol, now + 1);
+  g.gain.setValueAtTime(0, now); g.gain.linearRampToValueAtTime(TRACKS[name].vol, now + .35);
   g.connect(m); bgm.bus = g; bgm.name = name; bgm.step = 0; bgm.nextT = now + .15;
   bgm.timer = setInterval(bgmTick, 30);
 }
