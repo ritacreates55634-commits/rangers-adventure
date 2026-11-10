@@ -212,14 +212,21 @@ function bgmTick() {
     bgm.nextT += 60 / tr.bpm / 4; bgm.step = (bgm.step + 1) % (tr.bars * 16);
   }
 }
+const UNLOCK_EVENTS = ['pointerdown', 'touchend', 'keydown', 'click', 'wheel', 'scroll'];
 function bgmUnlock(e) {
   if (bgm.unlocked) return;
   if (e && e.target && e.target.closest && e.target.closest('#startCta')) bgm.want = 'main';
-  bgm.unlocked = true; ac();
-  ['pointerdown', 'touchend', 'keydown', 'click'].forEach(ev => removeEventListener(ev, bgmUnlock, true));
-  if (soundOn) bgmPlay(bgm.want || 'quest');
+  const a = ac(); if (!a) return;
+  const ok = () => {
+    if (a.state !== 'running' || bgm.unlocked) return;
+    bgm.unlocked = true;
+    UNLOCK_EVENTS.forEach(ev => removeEventListener(ev, bgmUnlock, true));
+    if (soundOn) bgmPlay(bgm.want || 'quest');
+  };
+  if (a.state === 'running') ok(); else a.resume().then(ok).catch(() => {});
 }
-['pointerdown', 'touchend', 'keydown', 'click'].forEach(ev => addEventListener(ev, bgmUnlock, true));
+// タップ・キー・スクロールのどれかでブラウザが許可した時点で、すぐに再生を始める
+UNLOCK_EVENTS.forEach(ev => addEventListener(ev, bgmUnlock, { capture: true, passive: true }));
 document.addEventListener('visibilitychange', () => {
   if (!audio) return;
   if (document.hidden) audio.suspend(); else if (soundOn) audio.resume();
