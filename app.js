@@ -220,6 +220,16 @@ document.addEventListener('visibilitychange', () => {
   if (!audio) return;
   if (document.hidden) audio.suspend(); else if (soundOn) audio.resume();
 });
+/* 開いた時点で再生を試みる。ブラウザが許可しない場合は、最初のタップですぐ始める */
+(function tryAutoplay() {
+  try {
+    const a = ac(); if (!a) return;
+    const go = () => { if (a.state === 'running' && !bgm.unlocked) bgmUnlock(); };
+    a.addEventListener('statechange', go);
+    a.resume().then(go).catch(() => {});
+    go();
+  } catch (e) {}
+})();
 const sfx = {
   tap: () => tone(rand(780, 980), 0, .07, 'triangle'),
   ok: () => [660, 880, 1320].forEach((f, i) => tone(f, i * .09, .16)),
