@@ -26,7 +26,7 @@ function tone(f, t = 0, d = .12, type = 'square', v = .05) {
   o.connect(g).connect(a.destination); o.start(s); o.stop(s + d + .02);
 }
 
-let _master = null, _noise = null;
+let _master = null, _noise = null, dest = null;
 function master() {
   const a = ac(); if (!a) return null;
   if (_master) return _master;
@@ -45,7 +45,8 @@ function noiseBuf() {
   return _noise;
 }
 function noiseHit(t, dur, type, f, q, vol, f2) {
-  const a = ac(), m = master(); if (!a || !m) return;
+  const a = ac(), m = dest || master(); if (!a || !m) return;
+  t = Math.max(0, t);
   const s = a.currentTime + t, n = a.createBufferSource(), fl = a.createBiquadFilter(), g = a.createGain();
   n.buffer = noiseBuf(); fl.type = type; fl.frequency.setValueAtTime(f, s); fl.Q.value = q;
   if (f2) fl.frequency.exponentialRampToValueAtTime(f2, s + dur);
@@ -53,7 +54,8 @@ function noiseHit(t, dur, type, f, q, vol, f2) {
   n.connect(fl).connect(g).connect(m); n.start(s, Math.random()); n.stop(s + dur + .05);
 }
 function osc(type, f, t, dur, vol, atk = .005, f2, lp) {
-  const a = ac(), m = master(); if (!a || !m) return;
+  const a = ac(), m = dest || master(); if (!a || !m) return;
+  t = Math.max(0, t);
   const s = a.currentTime + t, o = a.createOscillator(), g = a.createGain();
   o.type = type; o.frequency.setValueAtTime(f, s); if (f2) o.frequency.exponentialRampToValueAtTime(f2, s + dur);
   g.gain.setValueAtTime(0, s); g.gain.linearRampToValueAtTime(vol, s + atk); g.gain.exponentialRampToValueAtTime(.0008, s + dur);
@@ -78,6 +80,116 @@ function brass(f, t, dur, vol = .12) {
   osc('square', f * .5, t, dur, vol * .5, .08, undefined, [300, 1200]);
 }
 function cymbal(t, vol = .35) { noiseHit(t, 2.2, 'highpass', 5200, .4, vol); noiseHit(t, 1.2, 'bandpass', 9000, 1.2, vol * .6); }
+
+/* ---------------------------------------------------------
+   BGM（その場で演奏します。音のファイルは使いません）
+   main = 冒険のテーマ / boss = 大サタン戦
+--------------------------------------------------------- */
+const mf = m => 440 * Math.pow(2, (m - 69) / 12);
+const TRACKS = {
+  main: {
+    bpm: 128, bars: 8, vol: .6,
+    CH: [[57, 60, 64], [53, 57, 60], [48, 52, 55], [55, 59, 62]],      // Am F C G
+    BASS: [33, 29, 36, 31],
+    MEL: [
+      [[0, 69, 3], [4, 72, 1], [6, 76, 2], [8, 74, 4], [12, 72, 4]],
+      [[0, 72, 3], [4, 69, 1], [6, 72, 2], [8, 77, 4], [12, 76, 4]],
+      [[0, 76, 3], [4, 79, 1], [6, 76, 2], [8, 72, 4], [12, 74, 4]],
+      [[0, 74, 4], [4, 71, 2], [6, 74, 2], [8, 79, 8]],
+      [[0, 81, 4], [4, 79, 2], [6, 76, 2], [8, 77, 4], [12, 76, 4]],
+      [[0, 77, 3], [4, 76, 1], [6, 72, 2], [8, 74, 4], [12, 72, 4]],
+      [[0, 72, 2], [2, 76, 2], [4, 79, 4], [8, 84, 4], [12, 83, 2], [14, 79, 2]],
+      [[0, 81, 4], [4, 79, 4], [8, 74, 6], [14, 71, 2]]
+    ],
+    step(s, t) {
+      const bar = s >> 4, st = s & 15, ci = bar % 4, spb = 60 / this.bpm / 4;
+      const ch = this.CH[ci], b = this.BASS[ci];
+      if (st === 0) ch.forEach(m => osc('triangle', mf(m + 12), t, spb * 16, .04, .3));
+      if (st % 2 === 0) osc('sawtooth', mf(b + (st % 8 === 6 ? 12 : 0)), t, spb * 1.9, .12, .005, undefined, [700, 200]);
+      osc('square', mf(ch[[0, 1, 2, 1][st % 4]] + (st % 8 >= 4 ? 24 : 12)), t, spb * 1.3, .03, .002, undefined, [3200, 700]);
+      (this.MEL[bar] || []).forEach(([ms, m, len]) => {
+        if (ms !== st) return;
+        osc('sawtooth', mf(m), t, spb * len * .95, .075, .03, undefined, [1300, 3400]);
+        osc('square', mf(m + 12), t, spb * len * .6, .018, .02, undefined, [2000, 5000]);
+      });
+      if (st === 0) taiko(true, t, .5);
+      if (st === 8) taiko(false, t, .45);
+      if (st === 6 || st === 10) taiko(false, t, .3);
+      if (st === 4 || st === 12) noiseHit(t, .12, 'bandpass', 1800, .8, .16);
+      if (st % 2 === 0) noiseHit(t, .03, 'highpass', 7000, .5, .05);
+      if (bar % 4 === 3 && st >= 12) noiseHit(t, .08, 'bandpass', 2200, .8, .12);
+      if (bar % 8 === 0 && st === 0) cymbal(t, .1);
+    }
+  },
+  boss: {
+    bpm: 148, bars: 8, vol: .65,
+    CH: [[50, 53, 57], [46, 50, 53], [43, 46, 50], [45, 49, 52]],     // Dm Bb Gm A
+    BASS: [38, 34, 31, 33],
+    RIFF: [
+      [[0, 62, 3], [3, 63, 1], [4, 62, 2], [6, 58, 2], [8, 62, 8]],
+      [[0, 58, 3], [3, 59, 1], [4, 58, 2], [6, 53, 2], [8, 58, 8]],
+      [[0, 67, 3], [3, 68, 1], [4, 67, 2], [6, 62, 2], [8, 67, 8]],
+      [[0, 69, 3], [3, 70, 1], [4, 69, 2], [6, 64, 2], [8, 73, 4], [12, 74, 4]]
+    ],
+    OST: [0, 0, 12, 0, 7, 0, 12, 3],
+    step(s, t) {
+      const bar = s >> 4, st = s & 15, ci = bar % 4, spb = 60 / this.bpm / 4;
+      const ch = this.CH[ci], b = this.BASS[ci];
+      if (st === 0) {
+        ch.forEach(m => osc('sawtooth', mf(m + 12), t, spb * 16, .03, .5, undefined, [500, 1000]));
+        noiseHit(t, 1.4, 'lowpass', 140, .8, .16, 60);
+      }
+      if (st % 2 === 0) osc('sawtooth', mf(b), t, spb * 1.9, .14, .004, undefined, [800, 150]);
+      osc('square', mf(b + 24 + this.OST[st % 8]), t, spb * .75, .032, .002, undefined, [2400, 500]);
+      (this.RIFF[ci] || []).forEach(([ms, m, len]) => { if (ms === st) brass(mf(m + (bar >= 4 ? 12 : 0)), t, spb * len * .95, .06); });
+      if (st === 0) taiko(true, t, 1);
+      if (st === 8) taiko(true, t, .85);
+      if (st === 4 || st === 12) { taiko(false, t, .7); noiseHit(t, .18, 'bandpass', 1600, .7, .26); }
+      if (st === 6 || st === 14) taiko(false, t, .5);
+      if (bar % 4 === 3 && st >= 12) taiko(false, t, .55 + (st - 12) * .12);
+      if (bar % 4 === 0 && st === 0) cymbal(t, bar === 0 ? .2 : .1);
+    }
+  }
+};
+const bgm = { want: null, name: null, bus: null, timer: 0, nextT: 0, step: 0, unlocked: false };
+function bgmStop(fade = .6) {
+  clearInterval(bgm.timer); bgm.timer = 0; bgm.name = null;
+  const a = audio, b = bgm.bus; bgm.bus = null;
+  if (!a || !b) return;
+  const n = a.currentTime;
+  b.gain.cancelScheduledValues(n); b.gain.setValueAtTime(b.gain.value, n); b.gain.linearRampToValueAtTime(0, n + fade);
+  setTimeout(() => { try { b.disconnect(); } catch (e) {} }, fade * 1000 + 300);
+}
+function bgmPlay(name) {
+  bgm.want = name;
+  if (!soundOn || !bgm.unlocked) return;
+  const a = ac(), m = master(); if (!a || !m) return;
+  if (bgm.name === name) return;
+  if (bgm.timer) bgmStop(.5);
+  const g = a.createGain(), now = a.currentTime;
+  g.gain.setValueAtTime(0, now); g.gain.linearRampToValueAtTime(TRACKS[name].vol, now + 1);
+  g.connect(m); bgm.bus = g; bgm.name = name; bgm.step = 0; bgm.nextT = now + .15;
+  bgm.timer = setInterval(bgmTick, 30);
+}
+function bgmTick() {
+  const a = audio, tr = TRACKS[bgm.name]; if (!a || !tr || !soundOn) return;
+  while (bgm.nextT < a.currentTime + .3) {
+    dest = bgm.bus;
+    try { tr.step(bgm.step, bgm.nextT - a.currentTime); } finally { dest = null; }
+    bgm.nextT += 60 / tr.bpm / 4; bgm.step = (bgm.step + 1) % (tr.bars * 16);
+  }
+}
+function bgmUnlock() {
+  if (bgm.unlocked) return;
+  bgm.unlocked = true; ac();
+  ['pointerdown', 'touchend', 'keydown', 'click'].forEach(ev => removeEventListener(ev, bgmUnlock, true));
+  if (soundOn) bgmPlay(bgm.want || 'main');
+}
+['pointerdown', 'touchend', 'keydown', 'click'].forEach(ev => addEventListener(ev, bgmUnlock, true));
+document.addEventListener('visibilitychange', () => {
+  if (!audio) return;
+  if (document.hidden) audio.suspend(); else if (soundOn) audio.resume();
+});
 const sfx = {
   tap: () => tone(rand(780, 980), 0, .07, 'triangle'),
   ok: () => [660, 880, 1320].forEach((f, i) => tone(f, i * .09, .16)),
@@ -118,7 +230,7 @@ soundBtn.addEventListener('click', () => {
   soundOn = !soundOn;
   soundBtn.setAttribute('aria-pressed', soundOn);
   soundBtn.textContent = soundOn ? '音 ON' : '音 OFF';
-  if (soundOn) sfx.tap();
+  if (soundOn) { sfx.tap(); bgm.unlocked = true; bgmPlay(bgm.want || 'main'); } else bgmStop(.4);
 });
 
 /* ---------------------------------------------------------
@@ -460,6 +572,7 @@ function setEnemy(isBoss) {
 
 function startGame() {
   S = newState();
+  bgmPlay('main');
   // 通常戦の出題順を毎回ランダムに（大サタン戦は最後に固定）
   const nn = TOTAL - BOSS_N;
   for (let i = nn - 1; i > 0; i--) { const j = (Math.random() * (i + 1)) | 0; [LIST[i], LIST[j]] = [LIST[j], LIST[i]]; }
@@ -618,7 +731,7 @@ let rallyCells;
 function doRally() {
   S.rallied = true;
   setEnemy(true); el('stageLabel').textContent = 'RALLY';
-  showPanel('rally'); showBanner('大サタン出現！'); sfx.bossAppear();
+  showPanel('rally'); showBanner('大サタン出現！'); bgmStop(.5); bgm.want = 'boss'; sfx.bossAppear();
   rallyCells = makeGrid(el('rallyGrid')); rallyCells.forEach(c => c.addEventListener('click', () => { c.classList.add('lit'); tapCell(c); }));
   const n = squadFor(S.correct), num = el('rallyNum');
   num.textContent = '0'; el('rallyPlus').textContent = '';
@@ -630,7 +743,7 @@ function doRally() {
     if (k % 6 === 0) tone(400 + k * 6, 0, .06, 'triangle');
   }, Math.max(14, 1400 / Math.max(n, 1)));
 }
-el('btnRally').addEventListener('click', () => { sfx.tap(); loadQuestion(); });
+el('btnRally').addEventListener('click', () => { sfx.tap(); bgmPlay('boss'); loadQuestion(); });
 
 /* finale : mash */
 function startFinale() {
@@ -727,7 +840,7 @@ function shatter() {
   setTimeout(() => wrap.remove(), 2800);
 }
 async function winFinale() {
-  const F = S.finale; F.over = true; cancelAnimationFrame(F.raf);
+  const F = S.finale; F.over = true; cancelAnimationFrame(F.raf); bgmStop(.4); bgm.want = 'main';
   el('timerFill').style.transform = 'scaleX(0)'; hpFill.style.width = '0%';
   sfx.boom(); flash('flash');
   enemy.classList.add('prebreak'); await wait(650);
@@ -763,6 +876,7 @@ function showResult() {
   showScreen('result');
   el('cabinet').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
   burst(innerWidth / 2, innerHeight / 2, 16);
+  bgmPlay('main');
 }
 el('btnAgain').addEventListener('click', startGame);
 el('btnShare').addEventListener('click', async () => {
