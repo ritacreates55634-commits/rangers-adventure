@@ -135,8 +135,8 @@ window.QUIZ_DATA = [
     boss: true,
     type: "order",
     choices: ["リポスト", "いいね", "引用リポスト", "リンクコピー"],
-    answerOrder: [3, 2, 0, 1],
-    explain: "1位リンクコピー、2位引用リポスト、3位リポスト、4位いいねの順です。Xが公開している評価の重みは、リンクコピー20.0、引用リポスト5.0、リポスト1.0、いいね0.708です（出典：GitHub xai-org/x-algorithm の home-mixer/params/param.rs）。"
+    answerOrder: [2, 0, 1, 3],
+    explain: "1位引用リポスト、2位リポスト、3位いいね、4位リンクコピーの順です。Xが公開している評価の重みは、引用リポスト5.0、リポスト1.0、いいね0.708、リンクコピー0.0です（2026年11月15日に確認。出典：GitHub xai-org/x-algorithm の home-mixer/params/param.rs）。重みは、反応が起きる予測確率にかける係数です。"
   }
 ];
 
@@ -153,3 +153,11 @@ window.ENEMY_DATA = [
   { name: "空欄ゴースト",   kind: 1, color: "#d0d0e8", dark: "#55557a" }
 ];
 window.BOSS_DATA = { name: "大サタン" };
+
+/* Xのアルゴリズム（並べ替えの問題の根拠）。更新するときは日付と重みを書き換える */
+window.ALGO_SOURCE = {
+  checked: "2026-11-15",
+  repo: "xai-org/x-algorithm",
+  file: "home-mixer/params/param.rs",
+  weights: { quote: 5.0, repost: 1.0, like: 0.708, linkCopy: 0.0 }
+};
