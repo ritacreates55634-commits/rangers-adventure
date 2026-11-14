@@ -560,6 +560,29 @@ const LIST = Q0.map((q, i) => ({ ...q, boss: flags[i] }));
 LIST.sort((a, b) => (a.boss - b.boss));          // stable: boss questions last
 const TOTAL = LIST.length, BOSS_N = LIST.filter(q => q.boss).length;
 
+/* Xの公式データ（GitHub）を開いたときに読み込み、並べ替え問題の正解と解説を最新にする。
+   読み込めないときは quiz-data.js に書いてある内容のまま使う。 */
+(function syncAlgo() {
+  const q = LIST.find(x => x.type === 'order'); if (!q || !window.fetch) return;
+  const URL_RAW = 'https://raw.githubusercontent.com/xai-org/x-algorithm/main/home-mixer/params/param.rs';
+  const KEYS = { 'リポスト': 'RetweetWeight', 'いいね': 'FavoriteWeight', '引用リポスト': 'QuoteWeight', 'リンクコピー': 'ShareViaCopyLinkWeight' };
+  if (!q.choices.every(c => KEYS[c])) return;
+  fetch(URL_RAW, { cache: 'no-store' }).then(r => r.ok ? r.text() : Promise.reject()).then(txt => {
+    const w = {};
+    for (const m of txt.matchAll(/param!\(\s*(\w+Weight),\s*f64,\s*"[^"]+",\s*(-?[0-9.]+)\s*\)/g)) w[m[1]] = parseFloat(m[2]);
+    const vals = q.choices.map(c => w[KEYS[c]]);
+    if (!vals.every(Number.isFinite)) return;
+    const order = q.choices.map((_, i) => i).sort((a, b) => vals[b] - vals[a] || a - b);
+    const d = new Date(), ds = `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`;
+    const ranks = order.map((i, n) => `${n + 1}位${q.choices[i]}`).join('、');
+    const nums = order.map(i => `${q.choices[i]}${vals[i]}`).join('、');
+    q.answerOrder = order;
+    q.explain = `${ranks}の順です。Xが公開している評価の重みは、${nums}です（${ds}に最新の公式データを確認。出典：GitHub xai-org/x-algorithm の home-mixer/params/param.rs）。重みは、反応が起きる予測確率にかける係数です。`;
+    document.documentElement.dataset.algoSynced = order.map(i => q.choices[i] + '=' + vals[i]).join(',');
+  }).catch(() => {});
+})();
+
+
 const el = id => document.getElementById(id);
 const screens = { start: el('screenStart'), battle: el('screenBattle'), result: el('screenResult') };
 const panels = { quiz: el('pQuiz'), fb: el('pFeedback'), rally: el('pRally'), finale: el('pFinale'), over: el('pOver') };
